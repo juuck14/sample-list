@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.DS_Store
+
+# 디자인 핸드오프 번들 / 임시 추출물
+ui.zip
+_ui_extract
+_workspace_*
