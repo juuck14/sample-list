@@ -1,26 +1,32 @@
-// store/samples.js 를 감싼 React 훅. localStorage는 동기이므로 로컬 state로 동기화한다.
-import { useState, useCallback } from 'react'
+// store/samples.js 를 감싼 React 훅. Drive API는 비동기이므로 로컬 state로 동기화한다.
+import { useState, useCallback, useEffect } from 'react'
 import * as store from '../store/samples.js'
 
 export function useSamples() {
-  const [samples, setSamples] = useState(() => store.getSamples())
+  const [samples, setSamples] = useState([])
 
-  const refresh = useCallback(() => setSamples(store.getSamples()), [])
-
-  const addSample = useCallback((video) => {
-    store.addSample(video)
-    setSamples(store.getSamples())
+  const refresh = useCallback(async () => {
+    setSamples(await store.getSamples())
   }, [])
 
-  const removeSample = useCallback((videoId) => {
-    store.removeSample(videoId)
-    setSamples(store.getSamples())
-  }, [])
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
-  const updateComment = useCallback((videoId, comment) => {
-    store.updateComment(videoId, comment)
-    setSamples(store.getSamples())
-  }, [])
+  const addSample = useCallback(async (video) => {
+    await store.addSample(video)
+    await refresh()
+  }, [refresh])
+
+  const removeSample = useCallback(async (videoId) => {
+    await store.removeSample(videoId)
+    await refresh()
+  }, [refresh])
+
+  const updateComment = useCallback(async (videoId, comment) => {
+    await store.updateComment(videoId, comment)
+    await refresh()
+  }, [refresh])
 
   return { samples, refresh, addSample, removeSample, updateComment }
 }
