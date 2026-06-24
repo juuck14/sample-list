@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchLikedVideos } from '../api/youtube.js'
-import { isSampled, backfillLikedRanks } from '../store/samples.js'
+import { backfillLikedRanks } from '../store/samples.js'
 
 // 좋아요한 영상 모달. samples: 추가됨 표시 갱신용, onAdd: 샘플 추가, onClose: 닫기, onSync: 백필 후 새로고침
 export default function LikedModal({ samples, onAdd, onClose, onSync }) {
@@ -12,12 +12,13 @@ export default function LikedModal({ samples, onAdd, onClose, onSync }) {
     let alive = true
     setStatus('loading')
     fetchLikedVideos()
-      .then((list) => {
+      .then(async (list) => {
         if (!alive) return
         setVideos(list)
         setStatus('ready')
         // 기존 샘플의 likedRank를 좋아요 순서로 보정 → 목록 새로고침
-        if (backfillLikedRanks(list) && onSync) onSync()
+        const changed = await backfillLikedRanks(list)
+        if (alive && changed && onSync) await onSync()
       })
       .catch((e) => {
         if (!alive) return
@@ -47,7 +48,7 @@ export default function LikedModal({ samples, onAdd, onClose, onSync }) {
         {status === 'ready' && videos.length > 0 && (
           <div className="modal__body">
             {videos.map((v) => {
-              const sampled = samples.some((s) => s.videoId === v.videoId) || isSampled(v.videoId)
+              const sampled = samples.some((s) => s.videoId === v.videoId)
               return (
                 <div className="lcard" key={v.videoId}>
                   <div className="lcard__thumb">
