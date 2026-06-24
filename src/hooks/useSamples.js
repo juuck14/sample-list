@@ -23,10 +23,14 @@ export function useSamples() {
     await refresh()
   }, [refresh])
 
+  // 코멘트는 입력 빈도가 높으므로 로컬 state를 먼저 낙관적으로 갱신하고
+  // Drive 저장은 백그라운드로 보낸다(전체 refresh 재조회 없음).
   const updateComment = useCallback(async (videoId, comment) => {
+    setSamples((prev) =>
+      prev.map((s) => (s.videoId === videoId ? { ...s, comment } : s)),
+    )
     await store.updateComment(videoId, comment)
-    await refresh()
-  }, [refresh])
+  }, [])
 
   return { samples, refresh, addSample, removeSample, updateComment }
 }
