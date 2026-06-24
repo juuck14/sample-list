@@ -6,8 +6,12 @@
 //  (2) 만료 시 prompt:'' 로 "조용한 재발급"(팝업 없음, 이미 동의했으므로)을 시도한다.
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
-const SCOPE = 'https://www.googleapis.com/auth/youtube.readonly'
-const STORE_KEY = 'sampleList.auth.v1'
+const SCOPE = [
+  'https://www.googleapis.com/auth/youtube.readonly',
+  'https://www.googleapis.com/auth/drive.appdata',
+].join(' ')
+// v2: drive.appdata scope가 추가되어 기존 youtube-only 토큰을 재사용하지 않는다.
+const STORE_KEY = 'sampleList.auth.v2'
 
 let accessToken = null
 let expiresAt = 0 // epoch ms
@@ -86,9 +90,9 @@ function requestToken(prompt) {
   })
 }
 
-// 명시적 로그인 (버튼 클릭). 필요 시 동의 창을 띄운다.
+// 명시적 로그인 (버튼 클릭). 새 scope 동의를 받을 수 있도록 동의 창을 허용한다.
 export function signIn() {
-  return requestToken('')
+  return requestToken('consent')
 }
 
 // 앱 로드 시 자동 호출용: 저장된 토큰이 유효하면 그대로,
